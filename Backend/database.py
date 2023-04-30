@@ -1,7 +1,6 @@
 from firebase_admin import initialize_app
 from firebase_admin import credentials
 from firebase_admin import db
-import firebase_admin
 
 import Discord.config as config
 
@@ -14,7 +13,7 @@ class Base:
         self._connect()
 
     def _connect(self):
-        initialize_app(credentials.Certificate(self.cert), {'databaseURL': self.url}, name='[DEFAULT]')
+        initialize_app(credentials.Certificate(self.cert), {'databaseURL': self.url}, name=self.name)
 
     @staticmethod
     def get_data(ref_path: str):

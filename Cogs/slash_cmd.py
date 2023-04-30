@@ -39,4 +39,4 @@ class CogSlashCmd(commands.Cog):
 
 
 async def setup(client):
-    await client.add_cog(CogSlashCmd(Functions('slash_cmd')))
+    await client.add_cog(CogSlashCmd(Functions('[DEFAULT]')))
