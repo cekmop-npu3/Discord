@@ -1,5 +1,5 @@
-bot_token = 'MTAyODYwOTYzNzU4MDI3OTgzOA.G_yF1U.gllWW5N6DSGir2JopmDqJY0G9Z6mX8H70Ymemo'
-access_token = 'vk1.a.OUjrQ08fbN-2ms5FcVInuAvmWAPPKQ0ZcIhD4WC6EwL_xs0eZn_DOCIq1j_tDZ-ilfIWFEqlctZ0EJ74eaZPooEu_ckxuYjZXeEgTWqsgqE9de16vV-ZRjN16uHm9rTKjsICsDOs9ISrePm1tBYM8JDj-yYFzS8UnWZQHZx0Dd0TsuK-LrukxChgG9pRdrYdWFdjwQHzk8-yYSqD93cXUQ'
+bot_token = ''
+access_token = ''
 
 headers = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 OPR/97.0.0.0',
