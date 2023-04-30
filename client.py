@@ -1,5 +1,5 @@
 from discord.ext import commands
-from discord import Intents
+from discord import Intents, Member, Object
 from os import listdir
 
 from config import bot_token
@@ -11,6 +11,9 @@ class Client(commands.Bot):
 
     async def on_ready(self):
         print('--------Bot is ready--------')
+
+    async def on_member_join(self, member: Member):
+        await member.add_roles(Object(id=1054454788126945350))
 
     async def setup_hook(self) -> None:
         for filename in listdir('Cogs'):
