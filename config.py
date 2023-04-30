@@ -1,8 +1,5 @@
-from os import getenv
-
-
-bot_token = 'MTAyODYwOTYzNzU4MDI3OTgzOA.GeEVIz.GDIzi4SZbe-skMDetmmqUMY394aMmE_Pa8QMGs'
-access_token = 'vk1.a.XouQ6bjEC9Asubhh284UDaQ8vdSTVVXEvVrzEOoqQektHUYKtgLygc3_ZqlUtyOYUGHSVmC9oHfbowDialnoQs3bQ11CdU8OZ9HlB1yhFcoNxucwpgU0M2GVOyB5L3DV01bMOIhAyLJeHD39he7CSFwjk_7eMcL3xKW6hmNu79claO-HyDzo5KsVO1ppocuE-ak-5d9eKG4OYLlsdWd6PQ'
+bot_token = ''
+access_token = ''
 
 headers = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 OPR/97.0.0.0',
