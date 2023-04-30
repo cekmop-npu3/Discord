@@ -22,11 +22,6 @@ class Base:
         return ref.get()
 
     @staticmethod
-    def update_data(ref_path: str, json: dict):
+    def push_data(ref_path: str, json: dict):
         ref = db.reference(ref_path)
         ref.update(json)
-
-    @staticmethod
-    def push_data(ref_path: str, data):
-        ref = db.reference(ref_path)
-        ref.push(data)
