@@ -2,7 +2,7 @@ from discord.ext import commands
 from discord import app_commands, Interaction
 
 from Discord.Backend.engine import Functions
-from Discord.config import styles, sizes
+from Discord.config import styles
 
 
 class CogSlashCmd(commands.Cog):
@@ -22,16 +22,29 @@ class CogSlashCmd(commands.Cog):
             {'text': prompt}
         )
 
-    @app_commands.command(name='imagine', description='Generate images with CraiyonV3')
-    async def imagine(self, interaction: Interaction, prompt: str, style: str):
+    @app_commands.command(name='imagine2', description='Generate images with CraiyonV3')
+    @app_commands.describe(style='Style of the image')
+    @app_commands.choices(style=[
+        app_commands.Choice(name=i, value=str(g)) for i, g in zip(['art', 'drawing', 'photo', 'none'], range(4))
+    ])
+    async def imagine2(self, interaction: Interaction, prompt: str, style: app_commands.Choice[str] = 'none'):
         await self.spare(
             interaction,
             'https://api.craiyon.com/v3',
-            {'prompt': prompt, 'model': style.lower(), 'version': '35s5hfwn9n78gb06', 'negative_prompt': ''}
+            {'prompt': prompt, 'model': style.name, 'version': '35s5hfwn9n78gb06', 'negative_prompt': ''}
         )
 
-    @app_commands.command(name='imagine2', description='Generate images with Kandinsky 2.1')
-    async def imagine2(self, interaction: Interaction, prompt: str, size: int = 0, style: str = 'без стиля'):
+    @app_commands.command(name='imagine', description='Generate images with Kandinsky 2.1')
+    @app_commands.describe(size='Width of the image')
+    @app_commands.choices(size=[
+        app_commands.Choice(name=i, value=g) for i, g in zip(['768', '1152', '1536'], range(1, 4))
+
+    ])
+    @app_commands.describe(style='Style of the image')
+    @app_commands.choices(style=[
+        app_commands.Choice(name=i, value=g) for i, g in styles.items()
+    ])
+    async def imagine(self, interaction: Interaction, prompt: str, size: app_commands.Choice[int] = 768, style: app_commands.Choice[str] = 'no_style'):
         await self.spare(
             interaction,
             'https://api3.rudalle.ru/graphql/',
@@ -45,8 +58,8 @@ class CogSlashCmd(commands.Cog):
                         'bf': '601294688103192',
                         'height': 768,
                         'requestText': prompt,
-                        'style': styles.get(style, 'no_style'),
-                        'width': sizes.get(size, 768)
+                        'style': style.value,
+                        'width': int(size.name)
                     }
                 }
             }
