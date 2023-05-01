@@ -64,9 +64,10 @@ class Functions(Base):
             try:
                 async with session.post(url=url, headers=self.headers, json=payload, timeout=self.timeout) as response:
                     response = await response.json()
-                    return response.get('predictions')[:2000:] if 'gpt3' in url else '\n'.join(
-                        list(map(lambda x: 'https://img.craiyon.com/' + x, response.get('images')[:4:]))
-                    )
+                    response = response if not 'graphql' in url else response.get('data').get('requestKandinsky2Image').get('queryId')
+                    return response.get('predictions')[:2000:] if 'gpt3' in url else (
+                        '\n'.join(list(map(lambda x: 'https://img.craiyon.com/' + x, response.get('images')[:4:]))
+                                  ) if 'craiyon' in url else f"https://img2.rudalle.ru/images/{''.join([f'{i}{g}/' for i, g in zip(response[:6:2], response[1:6:2])])}{response}_00000.jpg")
             except TimeoutError:
                 return f'**TimeoutError:** No response within {self.seconds} seconds'
             

@@ -2,6 +2,7 @@ from discord.ext import commands
 from discord import app_commands, Interaction
 
 from Discord.Backend.engine import Functions
+from Discord.config import styles, sizes
 
 
 class CogSlashCmd(commands.Cog):
@@ -27,6 +28,28 @@ class CogSlashCmd(commands.Cog):
             interaction,
             'https://api.craiyon.com/v3',
             {'prompt': prompt, 'model': style.lower(), 'version': '35s5hfwn9n78gb06', 'negative_prompt': ''}
+        )
+
+    @app_commands.command(name='imagine2', description='Generate images with Kandinsky 2.1')
+    async def imagine2(self, interaction: Interaction, prompt: str, size: int = 0, style: str = 'без стиля'):
+        await self.spare(
+            interaction,
+            'https://api3.rudalle.ru/graphql/',
+            {
+                'operationName': 'requestKandinsky2Image',
+                'query': 'mutation requestKandinsky2Image($input: RequestImageInput!) {\n  requestKandinsky2Image(input: $input) '
+                         '{\n    ...ImageRequest\n   __typename\n  }\n}\n'
+                         'fragment ImageRequest on ImageRequestEntity {\n  queryId\n}',
+                'variables': {
+                    'input': {
+                        'bf': '601294688103192',
+                        'height': 768,
+                        'requestText': prompt,
+                        'style': styles.get(style, 'no_style'),
+                        'width': sizes.get(size, 768)
+                    }
+                }
+            }
         )
 
     @app_commands.command(name='clear', description='Clears a certain amount of messages. Admin rules are required')
