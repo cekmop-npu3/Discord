@@ -30,11 +30,6 @@ database_cert = {
     "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-yhh5y%40project-66708.iam.gserviceaccount.com"
 }
 
-sizes = {
-    1: 768,
-    2: 1152,
-    3: 1536
-}
 styles = {
     'без стиля': 'no_style',
     'новый год': 'christmas',
