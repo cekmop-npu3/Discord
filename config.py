@@ -29,3 +29,41 @@ database_cert = {
     "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
     "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-yhh5y%40project-66708.iam.gserviceaccount.com"
 }
+
+styles = {
+    'без стиля': 'no_style',
+    'новый год': 'christmas',
+    'портретное фото': 'portrait',
+    'студийное фото': 'professional_studio',
+    'цифровая живопись': 'high_quality_art',
+    '3D рендер': '3d_render',
+    'советский мультфильм': 'soviet_cartoon',
+    'мультфильм': 'cartoon',
+    'рисунок карандашом': 'pencil_drawing',
+    'мозайка': 'mosaic',
+    'иконопись': 'christian_icon',
+    'картина маслом': 'oil_painting',
+    'ренессанс': 'renaissance',
+    'классицизм': 'classicism',
+    'хохлома': 'khokhloma',
+    'пикассо': 'picasso',
+    'малевич': 'malevich',
+    'гончарова': 'gonharova',
+    'айвазовский': 'aivazovsky',
+    'кандинский': 'kandinsky'
+}
+payload = {
+    'operationName': 'requestKandinsky2Image',
+    'query': 'mutation requestKandinsky2Image($input: RequestImageInput!) {\n  requestKandinsky2Image(input: $input) '
+             '{\n    ...ImageRequest\n   __typename\n  }\n}\n'
+             'fragment ImageRequest on ImageRequestEntity {\n  queryId\n}',
+    'variables': {
+        'input': {
+            'bf': '601294688103192',
+            'height': 768,
+            'requestText': '',
+            'style': '',
+            'width': ''
+        }
+    }
+}
