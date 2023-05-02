@@ -9,9 +9,6 @@ class Client(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix='!', intents=Intents.all())
 
-    async def on_ready(self):
-        print('--------Bot is ready--------')
-
     async def on_member_join(self, member: Member):
         await member.add_roles(Object(id=1054454788126945350))
 

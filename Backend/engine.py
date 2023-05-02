@@ -79,4 +79,10 @@ class Functions(Base):
                         return url
             except TimeoutError:
                 return f'**TimeoutError:** No response within {self.seconds} seconds'
-            
+
+    async def get_short_link(self, url: str):
+        async with ClientSession() as session:
+            config.short_link_payload['url'] = url
+            async with session.post(url=config.vk_urls.get('get_short_link'), data=config.short_link_payload) as response:
+                response = await response.json()
+                return response.get('response').get('short_url')

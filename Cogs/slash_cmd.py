@@ -2,7 +2,7 @@ from discord.ext import commands
 from discord import app_commands, Interaction
 
 from Discord.Backend.engine import Functions
-from Discord.config import styles
+from Discord.config import styles, imagine_payload
 
 
 class CogSlashCmd(commands.Cog):
@@ -45,25 +45,10 @@ class CogSlashCmd(commands.Cog):
         app_commands.Choice(name=i, value=g) for i, g in styles.items()
     ])
     async def imagine(self, interaction: Interaction, prompt: str, size: app_commands.Choice[int], style: app_commands.Choice[str]):
-        await self.spare(
-            interaction,
-            'https://api3.rudalle.ru/graphql/',
-            {
-                'operationName': 'requestKandinsky2Image',
-                'query': 'mutation requestKandinsky2Image($input: RequestImageInput!) {\n  requestKandinsky2Image(input: $input) '
-                         '{\n    ...ImageRequest\n   __typename\n  }\n}\n'
-                         'fragment ImageRequest on ImageRequestEntity {\n  queryId\n}',
-                'variables': {
-                    'input': {
-                        'bf': '601294688103192',
-                        'height': 768,
-                        'requestText': prompt,
-                        'style': style.value,
-                        'width': int(size.name)
-                    }
-                }
-            }
-        )
+        imagine_payload['variables']['input']['requestText'] = prompt
+        imagine_payload['variables']['input']['style'] = style.value
+        imagine_payload['variables']['input']['width'] = int(size.name)
+        await self.spare(interaction, 'https://api3.rudalle.ru/graphql/', imagine_payload)
 
     @app_commands.command(name='clear', description='Clears a certain amount of messages. Admin rules are required')
     async def clear(self, interaction: Interaction, value: int):
@@ -72,6 +57,18 @@ class CogSlashCmd(commands.Cog):
             await interaction.channel.purge(limit=value+1)
         else:
             await interaction.followup.send(content='**InappropriateRuleError:** Admin rules are required')
+
+    @app_commands.command(name='getShortLink', description='Allows you to get a URL shortened with vk.cc')
+    async def short(self, interaction: Interaction, url: str):
+        ...
+
+    @app_commands.command(name='getLinkStats')
+    @app_commands.describe(style='Unit of time for calculating statistics')
+    @app_commands.choices(interval=[
+        app_commands.Choice(name=i, value=str(g)) for i, g in zip(['hour', 'day', 'week', 'month', 'forever'], range(5))
+    ])
+    async def l_stats(self, interaction: Interaction, interval: app_commands.Choice[str]):
+        ...
 
 
 async def setup(client):

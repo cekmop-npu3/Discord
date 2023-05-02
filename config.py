@@ -13,7 +13,9 @@ headers = {
 vk_urls = {
     'get_upload': 'https://api.vk.com/method/asr.getUploadUrl?v=5.123&client_id=51431207',
     'process': 'https://api.vk.com/method/asr.process?v=5.123&client_id=51431207',
-    'check_status': 'https://api.vk.com/method/asr.checkStatus?v=5.123&client_id=51431207'
+    'check_status': 'https://api.vk.com/method/asr.checkStatus?v=5.123&client_id=51431207',
+    'get_short_link': 'https://api.vk.com/method/utils.getShortLink',
+    'get_link_stats': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
 }
 
 database_url = 'https://project-66708-default-rtdb.europe-west1.firebasedatabase.app'
@@ -52,7 +54,7 @@ styles = {
     'айвазовский': 'aivazovsky',
     'кандинский': 'kandinsky'
 }
-payload = {
+imagine_payload = {
     'operationName': 'requestKandinsky2Image',
     'query': 'mutation requestKandinsky2Image($input: RequestImageInput!) {\n  requestKandinsky2Image(input: $input) '
              '{\n    ...ImageRequest\n   __typename\n  }\n}\n'
@@ -66,4 +68,19 @@ payload = {
             'width': ''
         }
     }
+}
+
+short_link_payload = {
+    'access_token': access_token,
+    'url': '',
+    'private': '1',
+    'v': '5.131'
+}
+stats_link_payload = {
+    'access_key': '',
+    'key': '',
+    'access_token': access_token,
+    'interval': '',
+    'extended': '1',
+    'v': '5.131',
 }
