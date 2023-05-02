@@ -58,17 +58,21 @@ class CogSlashCmd(commands.Cog):
         else:
             await interaction.followup.send(content='**InappropriateRuleError:** Admin rules are required')
 
-    @app_commands.command(name='getShortLink', description='Allows you to get a URL shortened with vk.cc')
+    @app_commands.command(name='get_short_link', description='Allows you to get a URL shortened with vk.cc')
     async def short(self, interaction: Interaction, url: str):
-        ...
+        await interaction.response.defer(thinking=True)
+        text = await self.backend.s_link(url, interaction.guild.id)
+        await interaction.followup.send(content=text)
 
-    @app_commands.command(name='getLinkStats')
-    @app_commands.describe(style='Unit of time for calculating statistics')
+    @app_commands.command(name='get_link_stats')
+    @app_commands.describe(interval='Unit of time for calculating statistics')
     @app_commands.choices(interval=[
         app_commands.Choice(name=i, value=str(g)) for i, g in zip(['hour', 'day', 'week', 'month', 'forever'], range(5))
     ])
-    async def l_stats(self, interaction: Interaction, interval: app_commands.Choice[str]):
-        ...
+    async def l_stats(self, interaction: Interaction, url: str, interval: app_commands.Choice[str]):
+        await interaction.response.defer(thinking=True)
+        text = await self.backend.s_link(url, interval.name, interaction.guild.id)
+        await interaction.followup.send(content=text)
 
 
 async def setup(client):

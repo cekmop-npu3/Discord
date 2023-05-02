@@ -80,9 +80,26 @@ class Functions(Base):
             except TimeoutError:
                 return f'**TimeoutError:** No response within {self.seconds} seconds'
 
-    async def get_short_link(self, url: str):
+    async def s_link(self, url: str, guild: int):
         async with ClientSession() as session:
             config.short_link_payload['url'] = url
             async with session.post(url=config.vk_urls.get('get_short_link'), data=config.short_link_payload) as response:
                 response = await response.json()
-                return response.get('response').get('short_url')
+                if response.get('error') is None:
+                    self.push_data(f'Discord/{guild}/short_links', {response.get('response').get('key'): response.get('response')})
+                    return response.get('response').get('short_url')
+                else:
+                    return '**InvalidUrlError:** Error code 100'
+
+    async def l_stats(self, url: str, interval: str, guild: int):
+        async with ClientSession() as session:
+            data = self.get_data(f'Discord/{guild}/short_links/{url.split("/")[-1]}')
+            config.stats_link_payload['access_key'] = data.get('access_key')
+            config.stats_link_payload['key'] = data.get('key')
+            config.stats_link_payload['interval'] = interval
+            async with session.post(url=config.vk_urls.get('get_link_stats'), data=config.stats_link_payload) as response:
+                response = await response.json()
+
+
+
+
