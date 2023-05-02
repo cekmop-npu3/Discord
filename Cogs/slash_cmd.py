@@ -78,6 +78,7 @@ class CogSlashCmd(commands.Cog):
                 color=Color.brand_green(),
                 timestamp=datetime.now()
         )
+        embed.set_footer(text='[PWNZ]Community')
         if isinstance(data, list):
             [embed.add_field(name=name, value=value, inline=False) for name, value in
              zip(['**1. Countries**', '**2. Cities**', '**3. Sex_Age**', '**4. Total views**'], data)
@@ -93,7 +94,6 @@ class CogSlashCmd(commands.Cog):
                 await interaction.followup.send(embed=embed)
             else:
                 await interaction.followup.send(content=data)
-
 
 
 async def setup(client):
