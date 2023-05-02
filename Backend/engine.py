@@ -93,7 +93,8 @@ class Functions(Base):
                 else:
                     return '**InvalidUrlError:** Error code 100'
 
-    async def spare(self, response: dict, session, names: list) -> str:
+    @staticmethod
+    async def spare(response: dict, session, names: list) -> str:
         lst = response.get('response').get('stats')[0].get(names[0])
         config.spare_payload[f'{names[1]}_ids'] = ', '.join([str(i.get(f'{names[1]}_id')) for i in lst])
         async with session.post(url=config.vk_urls.get(f'get_{names[1]}_by_id'), data=config.spare_payload) as response:

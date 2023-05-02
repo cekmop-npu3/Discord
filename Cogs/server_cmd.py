@@ -54,6 +54,7 @@ class CogServerCmd(commands.Cog):
                 color=Color.brand_green(),
                 timestamp=datetime.now()
             )
+            embed.set_thumbnail(url='https://emoji.discadia.com/emojis/46c1fdf5-c2da-427e-9464-d29e3b14eee9.png')
             embed.set_footer(text='[PWNZ]Community')
             embed.add_field(
                 name='**1. Общие положения**',
