@@ -70,6 +70,22 @@ class CogHelpCmd(commands.Cog):
                   '```',
             inline=False
         )
+        embed.add_field(
+            name='**6. /get_short_link [url] **',
+            value='```'
+                  'Позволяет получить URL, сокращённый с помощью vk.cc. Поле url - ссылка, '
+                  'для которой необходимо получить сокращённый вариант.'
+                  '```',
+            inline=False
+        )
+        embed.add_field(
+            name='**7. /get_link_stats [url] [interval]**',
+            value='```'
+                  'Возвращает статистику переходов по сокращённой ссылке. Поле url - сокращенная ссылка, '
+                  'interval - Единица времени для подсчета статистики.'
+                  '```',
+            inline=False
+        )
         await interaction.followup.send(embed=embed)
 
 
