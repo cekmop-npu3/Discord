@@ -80,26 +80,46 @@ class Functions(Base):
             except TimeoutError:
                 return f'**TimeoutError:** No response within {self.seconds} seconds'
 
-    async def s_link(self, url: str, guild: int):
+    async def s_link(self, url: str, guild: int) -> str:
         async with ClientSession() as session:
             config.short_link_payload['url'] = url
-            async with session.post(url=config.vk_urls.get('get_short_link'), data=config.short_link_payload) as response:
+            async with session.post(url=config.vk_urls.get('get_short_link'),
+                                    data=config.short_link_payload) as response:
                 response = await response.json()
                 if response.get('error') is None:
-                    self.push_data(f'Discord/{guild}/short_links', {response.get('response').get('key'): response.get('response')})
+                    self.push_data(f'Discord/{guild}/short_links',
+                                   {response.get('response').get('key'): response.get('response')})
                     return response.get('response').get('short_url')
                 else:
                     return '**InvalidUrlError:** Error code 100'
 
+    async def spare(self, response: dict, session, names: list) -> str:
+        lst = response.get('response').get('stats')[0].get(names[0])
+        config.spare_payload[f'{names[1]}_ids'] = ', '.join([str(i.get(f'{names[1]}_id')) for i in lst])
+        async with session.post(url=config.vk_urls.get(f'get_{names[1]}_by_id'), data=config.spare_payload) as response:
+            response = await response.json()
+            return '\n'.join([f'{key}: {value}' for key, value in
+                              zip([i.get('title') for i in response.get('response')], [i.get('views') for i in lst])])
+
     async def l_stats(self, url: str, interval: str, guild: int):
-        async with ClientSession() as session:
-            data = self.get_data(f'Discord/{guild}/short_links/{url.split("/")[-1]}')
-            config.stats_link_payload['access_key'] = data.get('access_key')
-            config.stats_link_payload['key'] = data.get('key')
-            config.stats_link_payload['interval'] = interval
-            async with session.post(url=config.vk_urls.get('get_link_stats'), data=config.stats_link_payload) as response:
-                response = await response.json()
-
-
-
+        if url.startswith('https://vk.cc/'):
+            async with ClientSession() as session:
+                data = self.get_data(f'Discord/{guild}/short_links/{url.split("/")[-1]}')
+                if data is not None:
+                    config.stats_link_payload['access_key'] = data.get('access_key')
+                    config.stats_link_payload['key'] = data.get('key')
+                    config.stats_link_payload['interval'] = interval
+                    async with session.post(url=config.vk_urls.get('get_link_stats'), data=config.stats_link_payload) as response:
+                        response = await response.json()
+                        if response.get('response').get('stats')[0].get('views') != 0:
+                            return [await self.spare(response, session, ['countries', 'country']),
+                                    await self.spare(response, session, ['cities', 'city']),
+                                    ''.join([f"Age range: {i.get('age_range')}\nFemale: {i.get('female')}\nMale: {i.get('male')}\n"
+                                            for i in response.get('response').get('stats')[0].get('sex_age')]),
+                                    response.get('response').get('stats')[0].get('views')
+                                    ]
+                        else:
+                            return 'No Data'
+        else:
+            return '**InvalidUrlError:** Error code 100'
 

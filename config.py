@@ -15,7 +15,9 @@ vk_urls = {
     'process': 'https://api.vk.com/method/asr.process?v=5.123&client_id=51431207',
     'check_status': 'https://api.vk.com/method/asr.checkStatus?v=5.123&client_id=51431207',
     'get_short_link': 'https://api.vk.com/method/utils.getShortLink',
-    'get_link_stats': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+    'get_link_stats': 'https://api.vk.com/method/utils.getLinkStats',
+    'get_city_by_id': 'https://api.vk.com/method/database.getCitiesById',
+    'get_country_by_id': 'https://api.vk.com/method/database.getCountriesById'
 }
 
 database_url = 'https://project-66708-default-rtdb.europe-west1.firebasedatabase.app'
@@ -83,4 +85,8 @@ stats_link_payload = {
     'interval': '',
     'extended': '1',
     'v': '5.131',
+}
+spare_payload = {
+    'access_token': access_token,
+    'v': '5.131'
 }

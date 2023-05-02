@@ -1,5 +1,6 @@
 from discord.ext import commands
-from discord import app_commands, Interaction
+from discord import app_commands, Interaction, Embed, Color
+from datetime import datetime
 
 from Discord.Backend.engine import Functions
 from Discord.config import styles, imagine_payload
@@ -64,15 +65,35 @@ class CogSlashCmd(commands.Cog):
         text = await self.backend.s_link(url, interaction.guild.id)
         await interaction.followup.send(content=text)
 
-    @app_commands.command(name='get_link_stats')
+    @app_commands.command(name='get_link_stats', description='Returns statistics of clicks on a shortened link')
     @app_commands.describe(interval='Unit of time for calculating statistics')
     @app_commands.choices(interval=[
         app_commands.Choice(name=i, value=str(g)) for i, g in zip(['hour', 'day', 'week', 'month', 'forever'], range(5))
     ])
     async def l_stats(self, interaction: Interaction, url: str, interval: app_commands.Choice[str]):
         await interaction.response.defer(thinking=True)
-        text = await self.backend.s_link(url, interval.name, interaction.guild.id)
-        await interaction.followup.send(content=text)
+        data = await self.backend.l_stats(url, interval.name, interaction.guild.id)
+        embed = Embed(
+                title=f'**Link stats**',
+                color=Color.brand_green(),
+                timestamp=datetime.now()
+        )
+        if isinstance(data, list):
+            [embed.add_field(name=name, value=value, inline=False) for name, value in
+             zip(['**1. Countries**', '**2. Cities**', '**3. Sex_Age**', '**4. Total views**'], data)
+             ]
+            await interaction.followup.send(embed=embed)
+        else:
+            if 'Error' not in data:
+                embed.add_field(
+                    name='**Response**',
+                    value=data,
+                    inline=False
+                )
+                await interaction.followup.send(embed=embed)
+            else:
+                await interaction.followup.send(content=data)
+
 
 
 async def setup(client):
