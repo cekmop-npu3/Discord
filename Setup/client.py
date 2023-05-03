@@ -15,7 +15,7 @@ class Client(commands.Bot):
     async def setup_hook(self) -> None:
         for filename in listdir('../Cogs'):
             if filename.endswith('.py'):
-                await self.load_extension(f'Cogs.{filename[:-3]}')
+                await self.load_extension(f'Discord.Cogs.{filename[:-3]}')
         await self.tree.sync()
 
 
