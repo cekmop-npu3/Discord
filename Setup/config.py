@@ -17,7 +17,8 @@ vk_urls = {
     'get_short_link': 'https://api.vk.com/method/utils.getShortLink',
     'get_link_stats': 'https://api.vk.com/method/utils.getLinkStats',
     'get_city_by_id': 'https://api.vk.com/method/database.getCitiesById',
-    'get_country_by_id': 'https://api.vk.com/method/database.getCountriesById'
+    'get_country_by_id': 'https://api.vk.com/method/database.getCountriesById',
+    'delete_short_link': 'https://api.vk.com/method/utils.deleteFromLastShortened'
 }
 
 database_url = 'https://project-66708-default-rtdb.europe-west1.firebasedatabase.app'
