@@ -1,6 +1,7 @@
 from aiohttp import ClientSession, ClientTimeout, FormData
 from asyncio.exceptions import TimeoutError
 from json import dumps
+from typing import Union
 
 from Discord.Backend.database import Base
 import Discord.Setup.config as config
@@ -101,7 +102,7 @@ class Functions(Base):
             return '\n'.join([f'{key}: {value}' for key, value in
                               zip([i.get('title') for i in response.get('response')], [i.get('views') for i in lst])])
 
-    async def l_stats(self, url: str, interval: str, guild: int):
+    async def l_stats(self, url: str, interval: str, guild: int) -> Union[list, str]:
         if url.startswith('https://vk.cc/'):
             async with ClientSession() as session:
                 data = self.get_data(f'Discord/{guild}/short_links/{url.split("/")[-1]}')
@@ -122,4 +123,3 @@ class Functions(Base):
                             return 'No Data'
         else:
             return '**InvalidUrlError:** Error code 100'
-
