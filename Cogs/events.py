@@ -1,8 +1,10 @@
 from discord.ext import commands
 from discord import Object, Message
 from asyncio import sleep
+from aiohttp import ClientSession
 
 from Discord.Backend.engine import Functions
+from Discord.Setup.config import vk_urls, spare_payload
 
 
 class CogEvents(commands.Cog):
@@ -59,8 +61,21 @@ class CogEvents(commands.Cog):
                 except AttributeError:
                     pass
 
+    @staticmethod
+    async def _del_s_links(links: list):
+        async with ClientSession() as session:
+            for key in links:
+                spare_payload['key'] = key
+                async with session.post(url=vk_urls.get('delete_short_link'), data=spare_payload) as _:
+                    return
+
     @commands.Cog.listener()
     async def on_ready(self):
+        for guild in self.client.guilds:
+            if (lst := self.backend.get_data(f'Discord/{guild.id}/short_links')) is not None:
+                if len(lst.keys()) > 25:
+                    await self._del_s_links(list(dict(list(lst.items())[len(lst.keys())-25:]).keys()))
+                    self.backend.push_data(f'Discord/{guild.id}', {'short_links': dict(list(lst.items())[:len(lst.keys())-25])})
         [[self.backend.push_data(f'Discord/{guild.id}/messages', {member.id: 0}) for member in guild.members] for guild in self.client.guilds if self.backend.get_data(f'Discord/{guild.id}/messages') is None]
         [await member.add_roles(Object(id=1054454788126945350)) for member in self.client.get_all_members() if len(member.roles) < 2]
         await self._msg_normalize()
