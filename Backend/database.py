@@ -24,3 +24,8 @@ class Base:
     def push_data(ref_path: str, json: dict):
         ref = db.reference(ref_path)
         ref.update(json)
+
+    @staticmethod
+    def delete_data(ref_path: str):
+        ref = db.reference(ref_path)
+        ref.delete()
