@@ -13,7 +13,7 @@ class Client(commands.Bot):
         await member.add_roles(Object(id=1054454788126945350))
 
     async def setup_hook(self) -> None:
-        for filename in listdir('Cogs'):
+        for filename in listdir('../Cogs'):
             if filename.endswith('.py'):
                 await self.load_extension(f'Cogs.{filename[:-3]}')
         await self.tree.sync()

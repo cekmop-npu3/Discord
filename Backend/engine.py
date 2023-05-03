@@ -3,14 +3,13 @@ from asyncio.exceptions import TimeoutError
 from json import dumps
 
 from Discord.Backend.database import Base
-import Discord.config as config
+import Discord.Setup.config as config
 
 
 class Functions(Base):
     def __init__(self, base_name):
         super().__init__(name=base_name)
         self.headers = config.headers
-        self.urls = config.vk_urls
         self.access_token = config.access_token
         self.seconds = 90
         self.timeout = ClientTimeout(total=self.seconds)
@@ -22,7 +21,7 @@ class Functions(Base):
                 file = await file_bytes.content.read()
             if not self.upload_url:
                 async with session.post(
-                        url=self.urls.get('get_upload'),
+                        url=config.vk_urls.get('get_upload'),
                         data={'access_token': self.access_token}
                 ) as response:
                     self.upload_url = await response.json()
@@ -36,7 +35,7 @@ class Functions(Base):
                 audio = await response.json()
             if audio.get('error_code') is None:
                 async with session.post(
-                        url=self.urls.get('process'),
+                        url=config.vk_urls.get('process'),
                         data={'audio': dumps(audio), 'model': 'spontaneous', 'access_token': self.access_token}
                 ) as response:
                     task_id = await response.json()
@@ -47,13 +46,13 @@ class Functions(Base):
 
     async def _translate(self, session, task_id) -> str:
         async with session.post(
-                url=self.urls.get('check_status'),
+                url=config.vk_urls.get('check_status'),
                 data={'task_id': task_id, 'access_token': self.access_token}
         ) as response:
             text = await response.json()
             while text.get('response').get('status') != 'finished':
                 async with session.post(
-                        url=self.urls.get('check_status'), data={'task_id': task_id, 'access_token': self.access_token}
+                        url=config.vk_urls.get('check_status'), data={'task_id': task_id, 'access_token': self.access_token}
                 ) as response:
                     text = await response.json()
                 continue

@@ -82,7 +82,7 @@ class CogHelpCmd(commands.Cog):
             name='**7. /get_link_stats [url] [interval]**',
             value='```'
                   'Возвращает статистику переходов по сокращённой ссылке. Поле url - сокращенная ссылка, '
-                  'interval - Единица времени для подсчета статистики. Аргумент forever поля interval - самый '
+                  'interval - единица времени для подсчета статистики. Аргумент forever поля interval - самый '
                   'оптимальный и стабильно работающий.'
                   '```',
             inline=False

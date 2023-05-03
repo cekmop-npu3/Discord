@@ -3,7 +3,7 @@ from discord import app_commands, Interaction, Embed, Color
 from datetime import datetime
 
 from Discord.Backend.engine import Functions
-from Discord.config import styles, imagine_payload
+from Discord.Setup.config import styles, imagine_payload
 
 
 class CogSlashCmd(commands.Cog):
@@ -78,6 +78,7 @@ class CogSlashCmd(commands.Cog):
                 color=Color.brand_green(),
                 timestamp=datetime.now()
         )
+        embed.set_thumbnail(url='https://emoji.discadia.com/emojis/4bb53359-5c67-437f-9d45-b2cbc8469a02.PNG')
         embed.set_footer(text='[PWNZ]Community')
         if isinstance(data, list):
             [embed.add_field(name=name, value=value, inline=False) for name, value in

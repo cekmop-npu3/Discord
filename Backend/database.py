@@ -2,7 +2,7 @@ from firebase_admin import initialize_app
 from firebase_admin import credentials
 from firebase_admin import db
 
-import Discord.config as config
+import Discord.Setup.config as config
 
 
 class Base:
