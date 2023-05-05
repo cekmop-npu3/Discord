@@ -3,10 +3,12 @@ from discord import app_commands, Interaction, Embed, Color
 from datetime import datetime
 from time import mktime
 
+from Discord.Backend.engine import Functions
+
 
 class CogServerCmd(commands.Cog):
-    def __init__(self, client) -> None:
-        self.client = client
+    def __init__(self, backend) -> None:
+        self.backend = backend
 
     @app_commands.command(name='server', description='Server info')
     async def server(self, interaction: Interaction):
@@ -24,6 +26,22 @@ class CogServerCmd(commands.Cog):
         embed.add_field(name='**Rules channel**', value=interaction.guild.rules_channel, inline=False)
         embed.add_field(name='**Roles**', value='\n'.join(map(lambda x: ' -  '+str(x), interaction.guild.roles[1::])), inline=False)
         embed.set_footer(text='[PWNZ]Community')
+        await interaction.followup.send(embed=embed)
+
+    @app_commands.command(name='server_top', description='The most active users')
+    async def server_top(self, interaction: Interaction):
+        await interaction.response.defer(thinking=True)
+        top = self.backend.get_data(f'Discord/{interaction.guild.id}/messages')
+        embed = Embed(
+            title=f'**{interaction.guild.name}**',
+            description=f"{sum(top.values())} messages",
+            color=Color.brand_green(),
+            timestamp=datetime.now()
+        )
+        embed.set_thumbnail(url='https://emoji.discadia.com/emojis/4bb53359-5c67-437f-9d45-b2cbc8469a02.PNG')
+        embed.set_footer(text='[PWNZ]Community')
+        top_users = (lst := sorted(list(filter(lambda x: x[1] > 0, list(top.items()))), key=lambda x: x[1], reverse=True))[:len(lst) if len(lst) < 10 else 10]
+        [embed.add_field(name=f'{count}. {await interaction.guild.fetch_member(int(value[0]))}', value=f'{value[1]} messages', inline=False) for count, value in enumerate(top_users, start=1)]
         await interaction.followup.send(embed=embed)
 
     @app_commands.command(name='welcome_message', description='Function is deprecated')
@@ -108,4 +126,4 @@ class CogServerCmd(commands.Cog):
 
 
 async def setup(client):
-    await client.add_cog(CogServerCmd(client))
+    await client.add_cog(CogServerCmd(Functions('server_cmd')))
