@@ -18,7 +18,9 @@ vk_urls = {
     'get_link_stats': 'https://api.vk.com/method/utils.getLinkStats',
     'get_city_by_id': 'https://api.vk.com/method/database.getCitiesById',
     'get_country_by_id': 'https://api.vk.com/method/database.getCountriesById',
-    'delete_short_link': 'https://api.vk.com/method/utils.deleteFromLastShortened'
+    'delete_short_link': 'https://api.vk.com/method/utils.deleteFromLastShortened',
+    'load_section': 'https://vk.com/al_audio.php?act=load_section',
+    'get_by_id': 'https://api.vk.com/method/audio.getById'
 }
 
 database_url = 'https://project-66708-default-rtdb.europe-west1.firebasedatabase.app'
@@ -91,3 +93,21 @@ spare_payload = {
     'access_token': access_token,
     'v': '5.131'
 }
+
+ls_payload = {
+    'al': 1,
+    'owner_id': '',
+    'playlist_id': -1,
+    'type': 'playlist'
+}
+ls_headers = {
+    'X-Requested-With': 'XMLHttpRequest',
+    'content-type': 'application/x-www-form-urlencoded',
+    'accept-language': 'ru,en-US;q=0.9,en;q=0.8,ru-RU;q=0.7',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36'
+}
+ids_params = [
+    ('access_token', access_token),
+    ('audios', ''),
+    ('v', '5.95')
+]
