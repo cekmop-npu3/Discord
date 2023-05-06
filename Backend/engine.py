@@ -115,7 +115,7 @@ class Functions(Base):
                         if response.get('response').get('stats')[0].get('views') != 0:
                             return [await self.spare(response, session, ['countries', 'country']),
                                     await self.spare(response, session, ['cities', 'city']),
-                                    ''.join([f"Age range: {i.get('age_range')}\nFemale: {i.get('female')}\nMale: {i.get('male')}\n"
+                                    ''.join([f"Age range: {i.get('age_range')}\n - Female: {i.get('female')}\n - Male: {i.get('male')}\n"
                                             for i in response.get('response').get('stats')[0].get('sex_age')]),
                                     response.get('response').get('stats')[0].get('views')
                                     ]
