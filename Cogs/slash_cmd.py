@@ -7,7 +7,7 @@ from Discord.Setup.config import styles, imagine_payload
 
 
 class CogSlashCmd(commands.Cog):
-    def __init__(self, backend) -> None:
+    def __init__(self, backend):
         self.backend = backend
 
     async def spare(self, interaction, url, data):
