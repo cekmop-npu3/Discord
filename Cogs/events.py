@@ -1,5 +1,5 @@
 from discord.ext import commands
-from discord import Object, Message
+from discord import Object, Message, Member
 from asyncio import sleep
 from aiohttp import ClientSession
 
@@ -20,6 +20,10 @@ class CogEvents(commands.Cog):
                 self.backend.push_data(f'Discord/{message.guild.id}/last_messages', {message.channel.id: [[message.id, message.author.id], *lst[:-1:]]})
         else:
             self.backend.push_data(f'Discord/{message.guild.id}/last_messages', {message.channel.id: [[message.id, message.author.id]]})
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member: Member):
+        await member.add_roles(Object(id=1054454788126945350))
 
     @commands.Cog.listener()
     async def on_message(self, message: Message):
