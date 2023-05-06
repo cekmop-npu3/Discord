@@ -2,6 +2,8 @@ from aiohttp import ClientSession, ClientTimeout, FormData
 from asyncio.exceptions import TimeoutError
 from json import dumps
 from typing import Union
+from firebase_admin.exceptions import InvalidArgumentError
+from discord import Interaction
 
 from Discord.Backend.database import Base
 import Discord.Setup.config as config
@@ -123,3 +125,29 @@ class Functions(Base):
                             return 'No Data'
         else:
             return '**InvalidUrlError:** Error code 100'
+
+    async def create_playlist(self, interaction: Interaction, owner_id: int) -> str:
+        async with ClientSession() as session:
+            config.ls_payload['owner_id'] = owner_id
+            async with session.post(url=config.vk_urls.get('load_section'), data=config.ls_payload, headers=config.ls_headers) as response:
+                response = await response.json()
+                if isinstance(response.get('payload')[0], int):
+                    for chunk in response.get('payload')[1][0].get('list'):
+                        config.ids_params[1] = ('audios', f'{chunk[1]}_{chunk[0]}_')
+                        async with session.get(url=config.vk_urls.get('get_by_id'), params=config.ids_params) as response:
+                            response = await response.json()
+                            if response.get('error') is None:
+                                artist, title, url = response.get('response')[0].get('artist'), response.get('response')[0].get('title'), response.get('response')[0].get('url')
+                                artist1 = artist.replace('.', '').replace(',', '').replace('|', '').replace('"', '').replace("'", '').replace('[', '').replace(']', '').lower()
+                                title1 = title.replace('.', '').replace(',', '').replace('|', '').replace('"', '').replace("'", '').replace('[', '').replace(']', '').lower()
+                                if url:
+                                    try:
+                                        self.push_data(f'Discord/{interaction.guild.id}/playlists/{interaction.user.id}', {f'{artist1} {title1}': {'url': url, 'artist': artist, 'title': title}})
+                                    except InvalidArgumentError:
+                                        pass
+                    if self.get_data(f'Discord/{interaction.guild.id}/playlists/{interaction.user.id}') is not None:
+                        return '**Music has been loaded**'
+                    else:
+                        return '**An Error occurred, try later**'
+                else:
+                    return '**An Error occurred, try later**'
