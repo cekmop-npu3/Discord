@@ -1,3 +1,6 @@
+from requests import get
+
+
 bot_token = ''
 access_token = ''
 
@@ -37,43 +40,12 @@ database_cert = {
     "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-yhh5y%40project-66708.iam.gserviceaccount.com"
 }
 
-styles = {
-    'без стиля': 'no_style',
-    'новый год': 'christmas',
-    'портретное фото': 'portrait',
-    'студийное фото': 'professional_studio',
-    'цифровая живопись': 'high_quality_art',
-    '3D рендер': '3d_render',
-    'советский мультфильм': 'soviet_cartoon',
-    'мультфильм': 'cartoon',
-    'рисунок карандашом': 'pencil_drawing',
-    'мозайка': 'mosaic',
-    'иконопись': 'christian_icon',
-    'картина маслом': 'oil_painting',
-    'ренессанс': 'renaissance',
-    'классицизм': 'classicism',
-    'хохлома': 'khokhloma',
-    'пикассо': 'picasso',
-    'малевич': 'malevich',
-    'гончарова': 'gonharova',
-    'айвазовский': 'aivazovsky',
-    'кандинский': 'kandinsky'
+imagine_headers = {
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36 OPR/98.0.0.0',
+    'origin': 'fusionbrain.ai',
+    'referer': 'https://fusionbrain.ai/diffusion'
 }
-imagine_payload = {
-    'operationName': 'requestKandinsky2Image',
-    'query': 'mutation requestKandinsky2Image($input: RequestImageInput!) {\n  requestKandinsky2Image(input: $input) '
-             '{\n    ...ImageRequest\n   __typename\n  }\n}\n'
-             'fragment ImageRequest on ImageRequestEntity {\n  queryId\n}',
-    'variables': {
-        'input': {
-            'bf': '601294688103192',
-            'height': 768,
-            'requestText': '',
-            'style': '',
-            'width': ''
-        }
-    }
-}
+styles = list(filter(lambda x: len(x.get('query')) < 100, list(get(url='https://fusionbrain.ai/locale/ru/index.json', headers=imagine_headers).json().get('styles').values())))
 
 short_link_payload = {
     'access_token': access_token,
@@ -98,7 +70,8 @@ ls_payload = {
     'al': 1,
     'owner_id': '',
     'playlist_id': -1,
-    'type': 'playlist'
+    'type': 'playlist',
+    'is_loading_all': 1
 }
 ls_headers = {
     'X-Requested-With': 'XMLHttpRequest',

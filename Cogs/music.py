@@ -6,7 +6,7 @@ from Discord.Backend.engine import Functions
 
 
 class CogMusic(commands.Cog):
-    def __init__(self,client, backend):
+    def __init__(self, client, backend):
         self.client = client
         self.backend = backend
         self.voice_clients = list()
@@ -31,6 +31,10 @@ class CogMusic(commands.Cog):
                                 if interaction.user.voice.channel == voice_client.channel:
                                     voice_client: VoiceClient = voice_client
                                     break
+                                else:
+                                    if interaction.guild == voice_client.guild:
+                                        await interaction.user.move_to(voice_client.channel)
+                                        break
                             else:
                                 voice_client: VoiceClient = await interaction.user.voice.channel.connect()
                             if voice_client.is_playing():

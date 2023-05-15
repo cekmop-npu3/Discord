@@ -1,9 +1,13 @@
 from aiohttp import ClientSession, ClientTimeout, FormData
 from asyncio.exceptions import TimeoutError
+from asyncio import sleep
+from aiofiles import open
 from json import dumps
 from typing import Union
 from firebase_admin.exceptions import InvalidArgumentError
 from discord import Interaction
+from base64 import decodebytes
+from time import time
 
 from Discord.Backend.database import Base
 import Discord.Setup.config as config
@@ -61,24 +65,39 @@ class Functions(Base):
                 continue
         return f"**{text.get('response').get('text')}**" if text.get('response').get('text') else '**Не распознано**'
 
-    async def create(self, url: str, payload: dict) -> str:
+    async def create(self, url: str, payload: dict, interaction=None) -> str:
         async with ClientSession() as session:
             try:
                 async with session.post(url=url, headers=self.headers, json=payload, timeout=self.timeout) as response:
                     response = await response.json()
-                    if 'graphql' not in url:
+                    if 'fusionbrain' not in url:
                         return response.get('predictions')[:2000:] if 'gpt3' in url else '\n'.join(
                             list(map(lambda x: 'https://img.craiyon.com/' + x, response.get('images')[:4:]))
                         )
                     else:
-                        r = response.get('data').get('requestKandinsky2Image').get('queryId')
-                        url = f"https://img2.rudalle.ru/images/{''.join([f'{i}{g}/' for i, g in zip(r[:6:2], r[1:6:2])])}{r}_00000.jpg"
-                        async with session.get(url=url) as response:
-                            while response.status == 404:
-                                async with session.get(url=url) as response:
-                                    response = response
-                                    continue
-                        return url
+                        async with session.post(
+                                url=url,
+                                data=payload,
+                                headers=config.imagine_headers) as response:
+                            response_run = await response.json()
+                            async with session.get(
+                                    url=f"https://fusionbrain.ai/api/v1/text2image/generate/pockets/{response_run.get('result').get('pocketId')}/status",
+                                    headers=config.imagine_headers) as response:
+                                response = await response.json()
+                            while response.get('result') != 'SUCCESS':
+                                await sleep(1)
+                                async with session.get(
+                                        url=f"https://fusionbrain.ai/api/v1/text2image/generate/pockets/{response_run.get('result').get('pocketId')}/status",
+                                        headers=config.imagine_headers) as response:
+                                    response = await response.json()
+                                continue
+                            async with session.get(
+                                    url=f"https://fusionbrain.ai/api/v1/text2image/generate/pockets/{response_run.get('result').get('pocketId')}/entities",
+                                    headers=config.imagine_headers) as response:
+                                response = await response.json()
+                                async with open(f'D:/PythonProject/Discord/{interaction.guild.id}_{interaction.user.id}_{payload.get("query")}_{int(time())}.jpg', 'wb') as file:
+                                    await file.write(decodebytes(bytes(response.get('result')[0].get('response')[0], 'utf-8')))
+                                return f'D:/PythonProject/Discord/{interaction.guild.id}_{interaction.user.id}_{payload.get("query")}_{int(time())}.jpg'
             except TimeoutError:
                 return f'**TimeoutError:** No response within {self.seconds} seconds'
 
@@ -131,7 +150,7 @@ class Functions(Base):
             config.ls_payload['owner_id'] = owner_id
             async with session.post(url=config.vk_urls.get('load_section'), data=config.ls_payload, headers=config.ls_headers) as response:
                 response = await response.json()
-                if isinstance(response.get('payload')[0], int):
+                try:
                     for chunk in response.get('payload')[1][0].get('list'):
                         config.ids_params[1] = ('audios', f'{chunk[1]}_{chunk[0]}_')
                         async with session.get(url=config.vk_urls.get('get_by_id'), params=config.ids_params) as response:
@@ -149,5 +168,5 @@ class Functions(Base):
                         return '**Music has been loaded**'
                     else:
                         return '**An Error occurred, try later**'
-                else:
+                except AttributeError:
                     return '**An Error occurred, try later**'

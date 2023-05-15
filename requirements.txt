@@ -2,3 +2,4 @@ discord
 aiohttp
 firebase_admin
 pynacl
+aiofiles
