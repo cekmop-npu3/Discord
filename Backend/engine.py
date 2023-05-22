@@ -7,6 +7,7 @@ from typing import Union
 from firebase_admin.exceptions import InvalidArgumentError
 from discord import Interaction
 from base64 import decodebytes
+from os import getcwd
 from time import time
 
 from Discord.Backend.database import Base
@@ -95,9 +96,9 @@ class Functions(Base):
                                     url=f"https://fusionbrain.ai/api/v1/text2image/generate/pockets/{response_run.get('result').get('pocketId')}/entities",
                                     headers=config.imagine_headers) as response:
                                 response = await response.json()
-                                async with open(f'D:/PythonProject/Discord/{interaction.guild.id}_{interaction.user.id}_{payload.get("query")}_{int(time())}.jpg', 'wb') as file:
+                                async with open(rf'{getcwd()}\{interaction.guild.id}_{interaction.user.id}_{payload.get("query")}_{int(time())}.jpg', 'wb') as file:
                                     await file.write(decodebytes(bytes(response.get('result')[0].get('response')[0], 'utf-8')))
-                                return f'D:/PythonProject/Discord/{interaction.guild.id}_{interaction.user.id}_{payload.get("query")}_{int(time())}.jpg'
+                                return rf'{getcwd()}\{interaction.guild.id}_{interaction.user.id}_{payload.get("query")}_{int(time())}.jpg'
             except TimeoutError:
                 return f'**TimeoutError:** No response within {self.seconds} seconds'
 
