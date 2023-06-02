@@ -1,5 +1,5 @@
 from discord.ext import commands
-from discord import Object, Message, Member
+from discord import Message, Member
 from asyncio import sleep
 from aiohttp import ClientSession
 
@@ -23,7 +23,11 @@ class CogEvents(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member: Member):
-        await member.add_roles(Object(id=1054454788126945350))
+        self.backend.push_data(f'Discord/{member.guild.id}/messages', {member.id: 0})
+
+    @commands.Cog.listener()
+    async def on_message_delete(self, message: Message):
+        print(message)
 
     @commands.Cog.listener()
     async def on_message(self, message: Message):
@@ -84,8 +88,10 @@ class CogEvents(commands.Cog):
                 if len(lst.keys()) > 25:
                     await self._del_s_links(list(dict(list(lst.items())[len(lst.keys())-25:]).keys()))
                     self.backend.push_data(f'Discord/{guild.id}', {'short_links': dict(list(lst.items())[:len(lst.keys())-25])})
-        [[self.backend.push_data(f'Discord/{guild.id}/messages', {member.id: 0}) for member in guild.members] for guild in self.client.guilds if self.backend.get_data(f'Discord/{guild.id}/messages') is None]
-        [await member.add_roles(Object(id=1054454788126945350)) for member in self.client.get_all_members() if len(member.roles) < 2]
+        for guild in self.client.guilds:
+            for member in guild.members:
+                if self.backend.get_data(f'Discord/{guild.id}/messages/{member.id}') is None:
+                    self.backend.push_data(f'Discord/{guild.id}/messages', {member.id: 0})
         await self._msg_normalize()
         print('Messages have been loaded')
 

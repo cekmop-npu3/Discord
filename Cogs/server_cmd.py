@@ -24,7 +24,7 @@ class CogServerCmd(commands.Cog):
         embed.add_field(name='**Owner**', value=interaction.guild.owner, inline=False)
         embed.add_field(name='**Members**', value=interaction.guild.member_count, inline=False)
         embed.add_field(name='**Rules channel**', value=interaction.guild.rules_channel, inline=False)
-        embed.add_field(name='**Roles**', value='\n'.join(map(lambda x: ' -  '+str(x), interaction.guild.roles[1::])), inline=False)
+        embed.add_field(name='**Roles**', value='\n'.join(map(lambda x: '-- '+str(x), interaction.guild.roles[1::])), inline=False)
         embed.set_footer(text='[PWNZ]Community')
         await interaction.followup.send(embed=embed)
 

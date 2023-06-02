@@ -23,10 +23,12 @@ vk_urls = {
     'get_country_by_id': 'https://api.vk.com/method/database.getCountriesById',
     'delete_short_link': 'https://api.vk.com/method/utils.deleteFromLastShortened',
     'load_section': 'https://vk.com/al_audio.php?act=load_section',
-    'get_by_id': 'https://api.vk.com/method/audio.getById'
+    'get_by_id': 'https://api.vk.com/method/audio.getById',
+    'users_get': 'https://api.vk.com/method/users.get'
 }
 
 database_url = 'https://project-66708-default-rtdb.europe-west1.firebasedatabase.app'
+database_storage_url = 'project-66708.appspot.com'
 database_cert = {
     "type": "service_account",
     "project_id": "project-66708",
@@ -84,3 +86,11 @@ ids_params = [
     ('audios', ''),
     ('v', '5.95')
 ]
+
+models = [[i.get('name'), i.get('id')] for i in get('https://getimg.ai/api/models?status=active&public=true').json()[:25:]]
+getimg_headers = {
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
+    'Origin': 'https://getimg.ai',
+    'Referer': 'https://getimg.ai/text-to-image',
+    'cookie': ''
+}

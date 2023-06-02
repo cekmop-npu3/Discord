@@ -2,12 +2,12 @@ from aiohttp import ClientSession, ClientTimeout, FormData
 from asyncio.exceptions import TimeoutError
 from asyncio import sleep
 from aiofiles import open
-from json import dumps
+from json import dumps, loads
 from typing import Union
 from firebase_admin.exceptions import InvalidArgumentError
 from discord import Interaction
 from base64 import decodebytes
-from os import getcwd
+from os import getcwd, path
 from time import time
 
 from Discord.Backend.database import Base
@@ -66,39 +66,60 @@ class Functions(Base):
                 continue
         return f"**{text.get('response').get('text')}**" if text.get('response').get('text') else '**Не распознано**'
 
-    async def create(self, url: str, payload: dict, interaction=None) -> str:
+    async def get_image(self, session, url, payload) -> Union[str, list]:
+        if (get_cookies := self.get_data('Discord/Cookies')) is not None:
+            config.getimg_headers['cookie'] = get_cookies[0]
+            async with session.post(url=url, data=payload, headers=config.getimg_headers) as response:
+                response = await response.text()
+                if isinstance(loads(response), list):
+                    images = [i.get('images')[0].get('jpegUrl') for i in loads(response)]
+                    if len(images) > 1:
+                        return images
+                    else:
+                        return images[0]
+                else:
+                    if len(get_cookies := self.get_data('Discord/Cookies')) > 1:
+                        self.push_data('Discord', {'Cookies': [get_cookies[1::], get_cookies[0]]})
+                        await self.get_image(session, url, payload)
+                    else:
+                        return '**CookiesError:** We are out of cookies, try later'
+        else:
+            return '**CookiesError:** We are out of cookies, try later'
+
+    async def create(self, url: str, payload: dict, interaction=None) -> Union[str, list]:
         async with ClientSession() as session:
             try:
-                async with session.post(url=url, headers=self.headers, json=payload, timeout=self.timeout) as response:
-                    response = await response.json()
-                    if 'fusionbrain' not in url:
-                        return response.get('predictions')[:2000:] if 'gpt3' in url else '\n'.join(
-                            list(map(lambda x: 'https://img.craiyon.com/' + x, response.get('images')[:4:]))
-                        )
-                    else:
-                        async with session.post(
-                                url=url,
-                                data=payload,
+                if 'craiyon' in url:
+                    async with session.post(url=url, headers=self.headers, json=payload, timeout=self.timeout) as response:
+                        response = await response.json()
+                    return response.get('predictions')[:2000:] if 'gpt3' in url else list(map(lambda x: 'https://img.craiyon.com/' + x, response.get('images')))
+                elif 'getimg' in url:
+                    return await self.get_image(session, url, payload)
+                else:
+                    async with session.post(
+                            url=url,
+                            data=payload,
+                            headers=config.imagine_headers) as response:
+                        response_run = await response.json()
+                        async with session.get(
+                                url=f"https://fusionbrain.ai/api/v1/text2image/generate/pockets/{response_run.get('result').get('pocketId')}/status",
                                 headers=config.imagine_headers) as response:
-                            response_run = await response.json()
+                            response = await response.json()
+                        while response.get('result') != 'SUCCESS':
+                            await sleep(1)
                             async with session.get(
                                     url=f"https://fusionbrain.ai/api/v1/text2image/generate/pockets/{response_run.get('result').get('pocketId')}/status",
                                     headers=config.imagine_headers) as response:
                                 response = await response.json()
-                            while response.get('result') != 'SUCCESS':
-                                await sleep(1)
-                                async with session.get(
-                                        url=f"https://fusionbrain.ai/api/v1/text2image/generate/pockets/{response_run.get('result').get('pocketId')}/status",
-                                        headers=config.imagine_headers) as response:
-                                    response = await response.json()
-                                continue
-                            async with session.get(
-                                    url=f"https://fusionbrain.ai/api/v1/text2image/generate/pockets/{response_run.get('result').get('pocketId')}/entities",
-                                    headers=config.imagine_headers) as response:
-                                response = await response.json()
-                                async with open(rf'{getcwd()}\{interaction.guild.id}_{interaction.user.id}_{payload.get("query")}_{int(time())}.jpg', 'wb') as file:
-                                    await file.write(decodebytes(bytes(response.get('result')[0].get('response')[0], 'utf-8')))
-                                return rf'{getcwd()}\{interaction.guild.id}_{interaction.user.id}_{payload.get("query")}_{int(time())}.jpg'
+                            continue
+                        async with session.get(
+                                url=f"https://fusionbrain.ai/api/v1/text2image/generate/pockets/{response_run.get('result').get('pocketId')}/entities",
+                                headers=config.imagine_headers) as response:
+                            response = await response.json()
+                            tm = round(time(), 3)
+                            async with open(rf'{getcwd()}\{interaction.guild.id}_{interaction.user.id}_{tm}.jpg', 'wb') as file:
+                                await file.write(decodebytes(bytes(response.get('result')[0].get('response')[0], 'utf-8')))
+                            return rf'{getcwd()}\{interaction.guild.id}_{interaction.user.id}_{tm}.jpg'
             except TimeoutError:
                 return f'**TimeoutError:** No response within {self.seconds} seconds'
 
@@ -137,7 +158,7 @@ class Functions(Base):
                         if response.get('response').get('stats')[0].get('views') != 0:
                             return [await self.spare(response, session, ['countries', 'country']),
                                     await self.spare(response, session, ['cities', 'city']),
-                                    ''.join([f"Age range: {i.get('age_range')}\n - Female: {i.get('female')}\n - Male: {i.get('male')}\n"
+                                    ''.join([f"Age range: {i.get('age_range')}\n -- Female: {i.get('female')}\n -- Male: {i.get('male')}\n"
                                             for i in response.get('response').get('stats')[0].get('sex_age')]),
                                     response.get('response').get('stats')[0].get('views')
                                     ]
@@ -146,8 +167,17 @@ class Functions(Base):
         else:
             return '**InvalidUrlError:** Error code 100'
 
-    async def create_playlist(self, interaction: Interaction, owner_id: int) -> str:
+    async def create_playlist(self, interaction: Interaction, owner_id: str) -> str:
         async with ClientSession() as session:
+            if 'https' in owner_id:
+                owner_id = owner_id.split('/')[-1]
+            payload = {
+                'access_token': config.access_token,
+                'user_ids': owner_id,
+                'v': '5.131'
+            }
+            async with session.post(url=config.vk_urls.get('users_get'), data=payload) as response:
+                owner_id = (await response.json()).get('response')[0].get('id')
             config.ls_payload['owner_id'] = owner_id
             async with session.post(url=config.vk_urls.get('load_section'), data=config.ls_payload, headers=config.ls_headers) as response:
                 response = await response.json()
@@ -158,14 +188,14 @@ class Functions(Base):
                             response = await response.json()
                             if response.get('error') is None:
                                 artist, title, url = response.get('response')[0].get('artist'), response.get('response')[0].get('title'), response.get('response')[0].get('url')
-                                artist1 = artist.replace('.', '').replace(',', '').replace('|', '').replace('"', '').replace("'", '').replace('[', '').replace(']', '').lower()
-                                title1 = title.replace('.', '').replace(',', '').replace('|', '').replace('"', '').replace("'", '').replace('[', '').replace(']', '').lower()
+                                title1 = ' '.join(''.join(list(map(lambda x: str(x) if (x.isalpha() or x.isdigit()) else ' ', title))).split()).lower()
+                                artist1 = ' '.join(''.join(list(map(lambda x: str(x) if (x.isalpha() or x.isdigit()) else ' ', artist))).split()).lower()
                                 if url:
                                     try:
-                                        self.push_data(f'Discord/{interaction.guild.id}/playlists/{interaction.user.id}', {f'{artist1} {title1}': {'url': url, 'artist': artist, 'title': title}})
+                                        self.push_data(f'Discord/{interaction.guild.id}/playlist', {f'{artist1} {title1}': {'url': url, 'artist': artist, 'title': title}})
                                     except InvalidArgumentError:
                                         pass
-                    if self.get_data(f'Discord/{interaction.guild.id}/playlists/{interaction.user.id}') is not None:
+                    if self.get_data(f'Discord/{interaction.guild.id}/playlist') is not None:
                         return '**Music has been loaded**'
                     else:
                         return '**An Error occurred, try later**'
