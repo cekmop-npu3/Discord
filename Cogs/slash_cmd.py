@@ -108,7 +108,6 @@ class CogSlashCmd(commands.Cog):
 
     @app_commands.command(name='generate', description='Generate images with getimg.ai')
     @app_commands.describe(prompt='Type <random> to get random prompt')
-    @app_commands.describe(high_res='Boolean variable')
     @app_commands.describe(fix_faces='Boolean variable')
     @app_commands.describe(image_quantity='Number of images (1 - 10)')
     @app_commands.describe(steps='Stands for image quality (1 - 75)')
@@ -120,7 +119,7 @@ class CogSlashCmd(commands.Cog):
     @app_commands.choices(ratio=[
         app_commands.Choice(name=i, value=g) for i, g in [['1:1', '512,512'], ['4:5', '512,640'], ['2:3', '512,768'], ['4:7', '512,896'], ['5:4', '640,512'], ['3:2', '768,512'], ['7:4', '896,512']]
     ])
-    async def generate(self, interaction: Interaction, model: app_commands.Choice[str], prompt: str, ratio: app_commands.Choice[str], high_res: bool = False, fix_faces: bool = False, image_quantity: int = 1, steps: int = 25, guidance_scale: int = 9, negative_prompt: str = 'Disfigured, cartoon, blurry, nude'):
+    async def generate(self, interaction: Interaction, model: app_commands.Choice[str], prompt: str, ratio: app_commands.Choice[str], fix_faces: bool = False, image_quantity: int = 1, steps: int = 25, guidance_scale: int = 9, negative_prompt: str = 'Disfigured, cartoon, blurry, nude'):
         await self.spare(
             interaction,
             f'https://getimg.ai/api/models/{model.value}',
@@ -129,8 +128,8 @@ class CogSlashCmd(commands.Cog):
                 "num_inference_steps": steps if steps in range(1, 76) else 1,
                 "guidance_scale": guidance_scale if guidance_scale in range(0, 20) else 9,
                 "num_images": image_quantity if image_quantity in range(1, 11) else 1,
-                "width": int(ratio.value.split(',')[0]) * (int(high_res) + 1),
-                "height": int(ratio.value.split(',')[1]) * (int(high_res) + 1),
+                "width": int(ratio.value.split(',')[0]),
+                "height": int(ratio.value.split(',')[1]),
                 "enhance_face": str(fix_faces).lower(),
                 "scheduler": "dpmsolver++",
                 "prompt": prompt if prompt.lower() != 'random' else get('https://getimg.ai/api/prompts/random').json().get('prompt'),

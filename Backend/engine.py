@@ -66,21 +66,18 @@ class Functions(Base):
                 continue
         return f"**{text.get('response').get('text')}**" if text.get('response').get('text') else '**Не распознано**'
 
-    async def get_image(self, session, url, payload) -> Union[str, list]:
+    async def get_image(self, session, url, payload) -> Union[str, list, dict]:
         if (get_cookies := self.get_data('Discord/Cookies')) is not None:
             config.getimg_headers['cookie'] = get_cookies[0]
             async with session.post(url=url, data=payload, headers=config.getimg_headers) as response:
                 response = await response.text()
                 if isinstance(loads(response), list):
                     images = [i.get('images')[0].get('jpegUrl') for i in loads(response)]
-                    if len(images) > 1:
-                        return images
-                    else:
-                        return images[0]
+                    return images if len(images) > 1 else images[0]
                 else:
                     if len(get_cookies := self.get_data('Discord/Cookies')) > 1:
-                        self.push_data('Discord', {'Cookies': [get_cookies[1::], get_cookies[0]]})
-                        await self.get_image(session, url, payload)
+                        self.push_data('Discord', {'Cookies': [*get_cookies[1::], get_cookies[0]]})
+                        return {'variables': [session, url, payload]}
                     else:
                         return '**CookiesError:** We are out of cookies, try later'
         else:
@@ -89,13 +86,15 @@ class Functions(Base):
     async def create(self, url: str, payload: dict, interaction=None) -> Union[str, list]:
         async with ClientSession() as session:
             try:
-                if 'craiyon' in url:
+                if 'craiyon' in url or 'gpt3' in url:
                     async with session.post(url=url, headers=self.headers, json=payload, timeout=self.timeout) as response:
                         response = await response.json()
                     return response.get('predictions')[:2000:] if 'gpt3' in url else list(map(lambda x: 'https://img.craiyon.com/' + x, response.get('images')))
                 elif 'getimg' in url:
-                    return await self.get_image(session, url, payload)
-                else:
+                    text = await self.get_image(session, url, payload)
+                    while isinstance(text, dict): text = await self.get_image(*text.get('variables'))
+                    return text
+                elif 'fusionbrain' in url:
                     async with session.post(
                             url=url,
                             data=payload,
@@ -130,8 +129,7 @@ class Functions(Base):
                                     data=config.short_link_payload) as response:
                 response = await response.json()
                 if response.get('error') is None:
-                    self.push_data(f'Discord/{guild}/short_links',
-                                   {response.get('response').get('key'): response.get('response')})
+                    self.push_data(f'Discord/{guild}/short_links', {response.get('response').get('key'): response.get('response')})
                     return response.get('response').get('short_url')
                 else:
                     return '**InvalidUrlError:** Error code 100'
@@ -142,8 +140,7 @@ class Functions(Base):
         config.spare_payload[f'{names[1]}_ids'] = ', '.join([str(i.get(f'{names[1]}_id')) for i in lst])
         async with session.post(url=config.vk_urls.get(f'get_{names[1]}_by_id'), data=config.spare_payload) as response:
             response = await response.json()
-            return '\n'.join([f'{key}: {value}' for key, value in
-                              zip([i.get('title') for i in response.get('response')], [i.get('views') for i in lst])])
+            return '\n'.join([f'{key}: {value}' for key, value in zip([i.get('title') for i in response.get('response')], [i.get('views') for i in lst])])
 
     async def l_stats(self, url: str, interval: str, guild: int) -> Union[list, str]:
         if url.startswith('https://vk.cc/'):
@@ -169,8 +166,7 @@ class Functions(Base):
 
     async def create_playlist(self, interaction: Interaction, owner_id: str) -> str:
         async with ClientSession() as session:
-            if 'https' in owner_id:
-                owner_id = owner_id.split('/')[-1]
+            if 'https' in owner_id: owner_id = owner_id.split('/')[-1]
             payload = {
                 'access_token': config.access_token,
                 'user_ids': owner_id,

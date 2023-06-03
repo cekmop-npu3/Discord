@@ -52,7 +52,7 @@ class CogMusic(commands.Cog):
         )
         await interaction.edit_original_response(embed=embed, view=CustomView(
             [MusicButton(label=label, func=func) for label, func in
-             zip(['⏪', '⏹️', button, '⏩'], [self.left, self.stop, self.pause_resume, self.right])]))
+             zip(['⏪', '⏹️', button, '🔁', '⏩'], [self.left, self.stop, self.pause_resume, self.repeat, self.right])]))
 
     @app_commands.command(name='play', description='Search and play music from your playlist')
     async def play(self, interaction: Interaction, track_name: str):
@@ -78,7 +78,7 @@ class CogMusic(commands.Cog):
                             )
                             await interaction.followup.send(embed=embed, view=CustomView(
                                 [MusicButton(label=label, func=func) for label, func in
-                                 zip(['⏪', '⏹️', '⏸️', '⏩'], [self.left, self.stop, self.pause_resume, self.right])]))
+                                 zip(['⏪', '⏹️', '⏸️', '🔁', '⏩'], [self.left, self.stop, self.pause_resume, self.repeat, self.right])]))
                             break
                     else:
                         await interaction.followup.send(content='**An Error occurred, type track name another way**')
@@ -87,17 +87,36 @@ class CogMusic(commands.Cog):
         else:
             await interaction.followup.send(content='**You are not in a voice channel**')
 
+    async def repeat(self, interaction):
+        if interaction.user.voice:
+            if (data := self.backend.get_data(f'Discord/{interaction.guild.id}/playlist/{self.track_name}')) is not None:
+                await self.embed_edit(
+                    interaction,
+                    data.get('title'),
+                    data.get('artist'),
+                    '⏸️'
+                )
+                await self.search_vc(interaction, self.track_name, data.get('url'))
+        else:
+            await interaction.followup.send(content="**Bot is not in a voice channel**")
+
     async def left(self, interaction):
-        if (data := self.backend.get_data(f'Discord/{interaction.guild.id}/playlist')) is not None:
-            track_name = (lst := list(data.keys()))[lst.index(self.track_name) - 1 if lst.index(self.track_name) > 0 else len(lst) - 1]
-            await self.embed_edit(interaction, data.get(track_name).get('title'), data.get(track_name).get("artist"))
-            await self.search_vc(interaction, track_name, data.get(track_name).get('url'))
+        if interaction.guild.voice_client:
+            if (data := self.backend.get_data(f'Discord/{interaction.guild.id}/playlist')) is not None:
+                track_name = (lst := list(data.keys()))[lst.index(self.track_name) - 1 if lst.index(self.track_name) > 0 else len(lst) - 1]
+                await self.embed_edit(interaction, data.get(track_name).get('title'), data.get(track_name).get("artist"))
+                await self.search_vc(interaction, track_name, data.get(track_name).get('url'))
+        else:
+            await interaction.followup.send(content="**Bot is not in a voice channel**")
 
     async def right(self, interaction):
-        if (data := self.backend.get_data(f'Discord/{interaction.guild.id}/playlist')) is not None:
-            track_name = (lst := list(data.keys()))[lst.index(self.track_name) + 1 if len(lst) > lst.index(self.track_name) + 1 else 0]
-            await self.embed_edit(interaction, data.get(track_name).get('title'), data.get(track_name).get("artist"))
-            await self.search_vc(interaction, track_name, data.get(track_name).get('url'))
+        if interaction.guild.voice_client:
+            if (data := self.backend.get_data(f'Discord/{interaction.guild.id}/playlist')) is not None:
+                track_name = (lst := list(data.keys()))[lst.index(self.track_name) + 1 if len(lst) > lst.index(self.track_name) + 1 else 0]
+                await self.embed_edit(interaction, data.get(track_name).get('title'), data.get(track_name).get("artist"))
+                await self.search_vc(interaction, track_name, data.get(track_name).get('url'))
+        else:
+            await interaction.followup.send(content="**Bot is not in a voice channel**")
 
     async def stop(self, interaction):
         if interaction.guild.voice_client:
@@ -112,9 +131,9 @@ class CogMusic(commands.Cog):
                 if interaction.user.voice.channel == voice_client.channel:
                     voice_client = voice_client
                     voice_client.pause() if self.switch[0] == 'paused' else voice_client.resume()
-                    data = self.backend.get_data(f'Discord/{interaction.guild.id}/playlist/{self.track_name}')
-                    await self.embed_edit(interaction, data.get('title'), data.get("artist"), '▶️' if self.switch[0] == 'paused' else '⏸️')
-                    self.switch = self.switch[::-1]
+                    if (data := self.backend.get_data(f'Discord/{interaction.guild.id}/playlist/{self.track_name}')) is not None:
+                        await self.embed_edit(interaction, data.get('title'), data.get("artist"), '▶️' if self.switch[0] == 'paused' else '⏸️')
+                        self.switch = self.switch[::-1]
                     break
             else:
                 await interaction.followup.send(content="**Bot is not in a voice channel**")

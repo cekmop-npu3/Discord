@@ -1,4 +1,4 @@
-from discord.ui import View, Select, Button
+from discord.ui import View, Select, Button, Modal, TextInput
 
 
 class CustomView(View):
@@ -22,5 +22,5 @@ class MusicButton(Button):
         self.func = func
 
     async def callback(self, interaction):
-        await interaction.response.defer(thinking=False)
+        await interaction.response.defer()
         await self.func(interaction)
